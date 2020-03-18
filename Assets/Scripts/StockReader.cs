@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using LitJson;
 using UnityEngine;
@@ -6,7 +7,9 @@ using UnityEngine.Networking;
 
 [System.Serializable]
 public class StockReader : MonoBehaviour {
-  private string url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=DJIA&interval=15min&apikey=RRK89HCB2UIPLVHO";
+  private string url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={0}&interval=15min&apikey=RRK89HCB2UIPLVHO";
+
+  public string stockName;
 
   [SerializeField]
   private LineRenderer myLine;
@@ -15,7 +18,8 @@ public class StockReader : MonoBehaviour {
   private List<StockEntry> stocksList = new List<StockEntry> ();
 
   IEnumerator Start () {
-    using (UnityWebRequest webRequest = UnityWebRequest.Get (url)) {
+    var reqURL = string.Format(url, stockName);
+    using (UnityWebRequest webRequest = UnityWebRequest.Get (reqURL)) {
       yield return webRequest.SendWebRequest ();
 
       JsonData respObj = JsonMapper.ToObject (webRequest.downloadHandler.text);
@@ -43,10 +47,16 @@ public class StockReader : MonoBehaviour {
   }
 
   private void SetupLine (List<StockEntry> lineData) {
+    var max = lineData.Max((ld) => ld.low);
+    var min = lineData.Min((ld) => ld.low);
+
+    var range = max - min;
+
     Vector3[] points = new Vector3[100];
     for (var i = 99; i > -1; i--) {
+      var val = (lineData[i].low - min) / range;
       Debug.Log(lineData[i].datetime);
-      points[i] = new Vector3 (i, float.Parse(lineData[i].close)/ 200f, 0);
+      points[i] = new Vector3 (i, val * 100, 0);
     }
 
     myLine.SetPositions(points);
@@ -55,18 +65,18 @@ public class StockReader : MonoBehaviour {
 
 public class StockEntry {
   public string datetime;
-  public string open;
-  public string high;
-  public string low;
-  public string close;
-  public string volume;
+  public float open;
+  public float high;
+  public float low;
+  public float close;
+  public float volume;
 
   public StockEntry (string dt, string o, string h, string l, string c, string v) {
     datetime = dt;
-    open = o;
-    high = h;
-    low = l;
-    close = c;
-    volume = v;
+    open = float.Parse(o);
+    high = float.Parse(h);
+    low = float.Parse(l);
+    close = float.Parse(c);
+    volume = float.Parse(v);
   }
 }
