@@ -1,7 +1,8 @@
 ﻿using System.Collections;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using LitJson;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -14,16 +15,52 @@ public class StockReader : MonoBehaviour {
   [SerializeField]
   private LineRenderer myLine;
   [SerializeField]
+  private EdgeCollider2D myEdge;
+  [SerializeField]
+  private TextMeshProUGUI myTmp;
+
+  [SerializeField]
+  private GameObject TextInput;
+  [SerializeField]
+  private GameObject PlayerObject;
+  [SerializeField]
+  private GameObject InstructionsObject;
 
   private List<StockEntry> stocksList = new List<StockEntry> ();
 
-  IEnumerator Start () {
-    var reqURL = string.Format(url, stockName);
+  private bool gameRunning = false;
+
+  void Update () {
+    if (Input.GetKeyDown (KeyCode.Backspace)) {
+      ResetGame ();
+    }
+
+  }
+
+  public void updateStockName (string value) {
+    Debug.Log (value.ToUpper ());
+    stockName = value.ToUpper ();
+    InstructionsObject.SetActive (false);
+    StartCoroutine (getLineData ());
+    TextInput.SetActive (false);
+  }
+
+  public IEnumerator getLineData () {
+    var reqURL = string.Format (url, stockName);
     using (UnityWebRequest webRequest = UnityWebRequest.Get (reqURL)) {
       yield return webRequest.SendWebRequest ();
+      myTmp.text = stockName;
+      PlayerObject.SetActive (true);
+      var text = webRequest.downloadHandler.text;
+      JsonData respObj = JsonMapper.ToObject (text);
+      HandleServerResponse (respObj);
+    }
+  }
 
-      JsonData respObj = JsonMapper.ToObject (webRequest.downloadHandler.text);
-      var seriesData = respObj["Time Series (15min)"];
+  private void HandleServerResponse (JsonData resp) {
+
+    try {
+      var seriesData = resp["Time Series (15min)"];
       var dataKeys = seriesData.Keys;
 
       foreach (var key in dataKeys) {
@@ -41,25 +78,44 @@ public class StockReader : MonoBehaviour {
 
       SetupLine (stocksList);
 
+    } catch (System.Exception e) {
+      myTmp.text = "Invalid Symbol";
     }
 
-    Debug.Log (stocksList);
+    gameRunning = true;
+
+    stocksList.Clear ();
+  }
+
+  public void ResetGame () {
+    gameRunning = false;
+    PlayerObject.SetActive (false);
+    PlayerObject.GetComponent<PlayerController> ().isControlled = true;
+    myTmp.text = "";
+    TextInput.GetComponent<TMP_InputField> ().text = "";
+    TextInput.SetActive (true);
+    InstructionsObject.SetActive (true);
+    myLine.positionCount = 0;
   }
 
   private void SetupLine (List<StockEntry> lineData) {
-    var max = lineData.Max((ld) => ld.low);
-    var min = lineData.Min((ld) => ld.low);
+    myLine.positionCount = lineData.Count;
+
+    var max = lineData.Max ((ld) => ld.low);
+    var min = lineData.Min ((ld) => ld.low);
 
     var range = max - min;
 
-    Vector3[] points = new Vector3[100];
-    for (var i = 99; i > -1; i--) {
+    Vector3[] points = new Vector3[lineData.Count];
+    Vector2[] edgePoints = new Vector2[lineData.Count];
+    for (var i = lineData.Count - 1; i > -1; i--) {
       var val = (lineData[i].low - min) / range;
-      Debug.Log(lineData[i].datetime);
-      points[i] = new Vector3 (i, val * 100, 0);
+      points[i] = new Vector3 (((float) i / (float) lineData.Count) * 150f, val * 100, 0);
+      edgePoints[i] = new Vector2 (((float) i / (float) lineData.Count) * 150f, val * 100);
     }
 
-    myLine.SetPositions(points);
+    myLine.SetPositions (points);
+    myEdge.points = edgePoints;
   }
 }
 
@@ -73,10 +129,10 @@ public class StockEntry {
 
   public StockEntry (string dt, string o, string h, string l, string c, string v) {
     datetime = dt;
-    open = float.Parse(o);
-    high = float.Parse(h);
-    low = float.Parse(l);
-    close = float.Parse(c);
-    volume = float.Parse(v);
+    open = float.Parse (o);
+    high = float.Parse (h);
+    low = float.Parse (l);
+    close = float.Parse (c);
+    volume = float.Parse (v);
   }
 }
