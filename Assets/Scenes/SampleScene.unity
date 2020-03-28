@@ -235,7 +235,7 @@ MonoBehaviour:
   isControlled: 1
   maxSize: 0
   minSize: 0
-  pushSpeed: 100
+  pushSpeed: 250
   scaleRate: 0.1
   maxSpeed: 250
 --- !u!50 &427471310
@@ -883,7 +883,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 67.100006, y: 0}
+  m_AnchoredPosition: {x: 67.1001, y: 0}
   m_SizeDelta: {x: -1854.1, y: -1030}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &886371800
@@ -1403,7 +1403,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 34.700012, y: 20.799988}
+  m_AnchoredPosition: {x: 34.69995, y: 20.799927}
   m_SizeDelta: {x: -190.2, y: -802.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1423322834

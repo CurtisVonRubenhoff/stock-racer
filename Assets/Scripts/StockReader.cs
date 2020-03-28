@@ -90,6 +90,7 @@ public class StockReader : MonoBehaviour {
   public void ResetGame () {
     gameRunning = false;
     PlayerObject.SetActive (false);
+    PlayerObject.transform.localScale = new Vector3(8, 8, 1);
     PlayerObject.GetComponent<PlayerController> ().isControlled = true;
     myTmp.text = "";
     TextInput.GetComponent<TMP_InputField> ().text = "";

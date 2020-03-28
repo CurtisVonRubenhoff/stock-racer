@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour {
   }
 
   // Update is called once per frame
-  void Update () {
+  void FixedUpdate () {
     if (isControlled) {
       var pos = mainCamera.ScreenToWorldPoint (Input.mousePosition, 0);
       var maxPosX = mainCamera.ScreenToWorldPoint (new Vector3 (Screen.width * .3f, 0, 0), 0).x;
@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour {
         transform.position = new Vector3 (maxPosX, pos.y, 0);
       }
 
-      if (Input.GetMouseButtonDown (0)) {
+      if (Input.GetMouseButton (0)) {
         isControlled = false;
       }
     } else {
